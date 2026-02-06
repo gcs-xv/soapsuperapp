@@ -1,0 +1,3885 @@
+{
+  "version": "0.1",
+  "stages": [
+    "Awal",
+    "PreOp",
+    "POD0",
+    "POD1"
+  ],
+  "cases": {
+    "Impaksi": {
+      "aliases": [
+        "Impaksi"
+      ],
+      "stage": {
+        "Awal": {
+          "questions": [
+            {
+              "key": "keluhan",
+              "label": "Keluhan utama",
+              "type": "text",
+              "default": "gigi belakang rahang bawah kanan dan kiri tidak tumbuh dan terasa sakit"
+            },
+            {
+              "key": "durasi",
+              "label": "Durasi keluhan (mis. 2 minggu)",
+              "type": "text",
+              "default": "2 minggu"
+            },
+            {
+              "key": "menjalar",
+              "label": "Nyeri menjalar (ya/tidak)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "menjalar_ke",
+              "label": "Menjalar ke mana?",
+              "type": "text",
+              "default": "kepala",
+              "show_if": {
+                "key": "menjalar",
+                "equals": true
+              }
+            },
+            {
+              "key": "batuk_flu_demam",
+              "label": "Sedang batuk/flu/demam?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "alergi",
+              "label": "Ada alergi obat/makanan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "sistemik",
+              "label": "Penyakit sistemik disangkal?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "gigi_list",
+              "label": "Gigi terkait (contoh: 18, 28, 38, 48)",
+              "type": "text",
+              "default": "18, 28, 38, 48"
+            }
+          ]
+        },
+        "PreOp": {
+          "questions": [
+            {
+              "key": "tanggal_laporan",
+              "label": "Tanggal laporan",
+              "type": "date",
+              "default": "today"
+            },
+            {
+              "key": "tanggal_operasi",
+              "label": "Tanggal operasi (default H+1)",
+              "type": "date",
+              "default": "tomorrow"
+            },
+            {
+              "key": "jam_operasi",
+              "label": "Jam operasi (HH.MM)",
+              "type": "text",
+              "default": "08.00"
+            },
+            {
+              "key": "zona_waktu",
+              "label": "Zona waktu",
+              "type": "text",
+              "default": "WITA"
+            },
+            {
+              "key": "tindakan",
+              "label": "Tindakan (diambil dari P raw / Minlap kalau ada)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "anestesi",
+              "label": "Anestesi",
+              "type": "text",
+              "default": "general anestesi"
+            },
+            {
+              "key": "puasa_on",
+              "label": "Masukkan plan puasa 6 jam",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_on",
+              "label": "Masukkan antibiotik profilaksis (1 jam sebelum operasi)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_nama",
+              "label": "Nama antibiotik profilaksis",
+              "type": "text",
+              "default": "Ceftriaxone",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_dosis",
+              "label": "Dosis antibiotik",
+              "type": "text",
+              "default": "1 gr",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_skin_test",
+              "label": "Tambahkan (skin test terlebih dahulu)",
+              "type": "bool",
+              "default": true,
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_on",
+              "label": "Masukkan IVFD",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ivfd_cairan",
+              "label": "Cairan IVFD",
+              "type": "text",
+              "default": "RL",
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "drip_factor",
+              "label": "Set drip (gtt/mL)",
+              "type": "select",
+              "options": [
+                20,
+                60
+              ],
+              "default": 20,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_tpm",
+              "label": "tpm (boleh pakai saran otomatis dari BB)",
+              "type": "int",
+              "min": 0,
+              "max": 200,
+              "default": 0,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "masker",
+              "label": "Gunakan masker bedah saat ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sikat_gigi",
+              "label": "Sikat gigi sebelum tidur & sebelum ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "washlap",
+              "label": "Washlap badan/wajah sebelum masuk kamar operasi",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "siap_prc",
+              "label": "Siap darah 1 bag PRC",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD0": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "dizzy",
+              "label": "Pusing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "nausea",
+              "label": "Mual?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "vomit",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD1": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      }
+    },
+    "Abses": {
+      "aliases": [
+        "Abses"
+      ],
+      "stage": {
+        "Awal": {
+          "questions": [
+            {
+              "key": "lokasi_bengkak",
+              "label": "Lokasi bengkak (mis. pipi kiri/bukal sinistra)",
+              "type": "text",
+              "default": "pipi kiri"
+            },
+            {
+              "key": "durasi",
+              "label": "Durasi (mis. 7 hari)",
+              "type": "text",
+              "default": "7 hari"
+            },
+            {
+              "key": "nyeri",
+              "label": "Nyeri?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "demam",
+              "label": "Demam?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "trismus",
+              "label": "Trismus?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "bukaan_mulut_mm",
+              "label": "Bukaan mulut (mm) jika trismus",
+              "type": "int",
+              "min": 0,
+              "max": 60,
+              "default": 10,
+              "show_if": {
+                "key": "trismus",
+                "equals": true
+              }
+            },
+            {
+              "key": "hoarseness",
+              "label": "Hoarseness?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "hot_potato",
+              "label": "Hot potato voice?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "neck_stiff",
+              "label": "Neck stiffness?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "difficult_swallow",
+              "label": "Difficult on swallowing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "pain_swallow",
+              "label": "Pain on swallowing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "batuk_flu",
+              "label": "Sedang batuk/flu?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "alergi",
+              "label": "Ada alergi obat/makanan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "sistemik",
+              "label": "Penyakit sistemik disangkal?",
+              "type": "bool",
+              "default": true
+            }
+          ]
+        },
+        "PreOp": {
+          "questions": [
+            {
+              "key": "tanggal_laporan",
+              "label": "Tanggal laporan",
+              "type": "date",
+              "default": "today"
+            },
+            {
+              "key": "tanggal_operasi",
+              "label": "Tanggal operasi (default H+1)",
+              "type": "date",
+              "default": "tomorrow"
+            },
+            {
+              "key": "jam_operasi",
+              "label": "Jam operasi (HH.MM)",
+              "type": "text",
+              "default": "08.00"
+            },
+            {
+              "key": "zona_waktu",
+              "label": "Zona waktu",
+              "type": "text",
+              "default": "WITA"
+            },
+            {
+              "key": "tindakan",
+              "label": "Tindakan (diambil dari P raw / Minlap kalau ada)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "anestesi",
+              "label": "Anestesi",
+              "type": "text",
+              "default": "general anestesi"
+            },
+            {
+              "key": "puasa_on",
+              "label": "Masukkan plan puasa 6 jam",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_on",
+              "label": "Masukkan antibiotik profilaksis (1 jam sebelum operasi)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_nama",
+              "label": "Nama antibiotik profilaksis",
+              "type": "text",
+              "default": "Ceftriaxone",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_dosis",
+              "label": "Dosis antibiotik",
+              "type": "text",
+              "default": "1 gr",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_skin_test",
+              "label": "Tambahkan (skin test terlebih dahulu)",
+              "type": "bool",
+              "default": true,
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_on",
+              "label": "Masukkan IVFD",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ivfd_cairan",
+              "label": "Cairan IVFD",
+              "type": "text",
+              "default": "RL",
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "drip_factor",
+              "label": "Set drip (gtt/mL)",
+              "type": "select",
+              "options": [
+                20,
+                60
+              ],
+              "default": 20,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_tpm",
+              "label": "tpm (boleh pakai saran otomatis dari BB)",
+              "type": "int",
+              "min": 0,
+              "max": 200,
+              "default": 0,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "masker",
+              "label": "Gunakan masker bedah saat ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sikat_gigi",
+              "label": "Sikat gigi sebelum tidur & sebelum ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "washlap",
+              "label": "Washlap badan/wajah sebelum masuk kamar operasi",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "siap_prc",
+              "label": "Siap darah 1 bag PRC",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD0": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "dizzy",
+              "label": "Pusing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "nausea",
+              "label": "Mual?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "vomit",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD1": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      }
+    },
+    "Selulitis": {
+      "aliases": [
+        "Selulitis",
+        "Sesulitis"
+      ],
+      "stage": {
+        "Awal": {
+          "questions": [
+            {
+              "key": "lokasi_bengkak",
+              "label": "Lokasi bengkak (mis. pipi kiri/bukal sinistra)",
+              "type": "text",
+              "default": "pipi kiri"
+            },
+            {
+              "key": "durasi",
+              "label": "Durasi (mis. 7 hari)",
+              "type": "text",
+              "default": "7 hari"
+            },
+            {
+              "key": "nyeri",
+              "label": "Nyeri?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "demam",
+              "label": "Demam?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "trismus",
+              "label": "Trismus?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "bukaan_mulut_mm",
+              "label": "Bukaan mulut (mm) jika trismus",
+              "type": "int",
+              "min": 0,
+              "max": 60,
+              "default": 10,
+              "show_if": {
+                "key": "trismus",
+                "equals": true
+              }
+            },
+            {
+              "key": "hoarseness",
+              "label": "Hoarseness?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "hot_potato",
+              "label": "Hot potato voice?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "neck_stiff",
+              "label": "Neck stiffness?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "difficult_swallow",
+              "label": "Difficult on swallowing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "pain_swallow",
+              "label": "Pain on swallowing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "batuk_flu",
+              "label": "Sedang batuk/flu?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "alergi",
+              "label": "Ada alergi obat/makanan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "sistemik",
+              "label": "Penyakit sistemik disangkal?",
+              "type": "bool",
+              "default": true
+            }
+          ]
+        },
+        "PreOp": {
+          "questions": [
+            {
+              "key": "tanggal_laporan",
+              "label": "Tanggal laporan",
+              "type": "date",
+              "default": "today"
+            },
+            {
+              "key": "tanggal_operasi",
+              "label": "Tanggal operasi (default H+1)",
+              "type": "date",
+              "default": "tomorrow"
+            },
+            {
+              "key": "jam_operasi",
+              "label": "Jam operasi (HH.MM)",
+              "type": "text",
+              "default": "08.00"
+            },
+            {
+              "key": "zona_waktu",
+              "label": "Zona waktu",
+              "type": "text",
+              "default": "WITA"
+            },
+            {
+              "key": "tindakan",
+              "label": "Tindakan (diambil dari P raw / Minlap kalau ada)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "anestesi",
+              "label": "Anestesi",
+              "type": "text",
+              "default": "general anestesi"
+            },
+            {
+              "key": "puasa_on",
+              "label": "Masukkan plan puasa 6 jam",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_on",
+              "label": "Masukkan antibiotik profilaksis (1 jam sebelum operasi)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_nama",
+              "label": "Nama antibiotik profilaksis",
+              "type": "text",
+              "default": "Ceftriaxone",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_dosis",
+              "label": "Dosis antibiotik",
+              "type": "text",
+              "default": "1 gr",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_skin_test",
+              "label": "Tambahkan (skin test terlebih dahulu)",
+              "type": "bool",
+              "default": true,
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_on",
+              "label": "Masukkan IVFD",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ivfd_cairan",
+              "label": "Cairan IVFD",
+              "type": "text",
+              "default": "RL",
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "drip_factor",
+              "label": "Set drip (gtt/mL)",
+              "type": "select",
+              "options": [
+                20,
+                60
+              ],
+              "default": 20,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_tpm",
+              "label": "tpm (boleh pakai saran otomatis dari BB)",
+              "type": "int",
+              "min": 0,
+              "max": 200,
+              "default": 0,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "masker",
+              "label": "Gunakan masker bedah saat ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sikat_gigi",
+              "label": "Sikat gigi sebelum tidur & sebelum ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "washlap",
+              "label": "Washlap badan/wajah sebelum masuk kamar operasi",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "siap_prc",
+              "label": "Siap darah 1 bag PRC",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD0": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "dizzy",
+              "label": "Pusing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "nausea",
+              "label": "Mual?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "vomit",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD1": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      }
+    },
+    "Tumor": {
+      "aliases": [
+        "Tumor",
+        "Tumor/Bone Tumor"
+      ],
+      "stage": {
+        "Awal": {
+          "questions": [
+            {
+              "key": "keluhan",
+              "label": "Keluhan utama (ringkas)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "durasi",
+              "label": "Durasi keluhan",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "batuk_flu_demam",
+              "label": "Sedang batuk/flu/demam?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "alergi",
+              "label": "Ada alergi obat/makanan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "sistemik",
+              "label": "Penyakit sistemik disangkal?",
+              "type": "bool",
+              "default": true
+            }
+          ]
+        },
+        "PreOp": {
+          "questions": [
+            {
+              "key": "tanggal_laporan",
+              "label": "Tanggal laporan",
+              "type": "date",
+              "default": "today"
+            },
+            {
+              "key": "tanggal_operasi",
+              "label": "Tanggal operasi (default H+1)",
+              "type": "date",
+              "default": "tomorrow"
+            },
+            {
+              "key": "jam_operasi",
+              "label": "Jam operasi (HH.MM)",
+              "type": "text",
+              "default": "08.00"
+            },
+            {
+              "key": "zona_waktu",
+              "label": "Zona waktu",
+              "type": "text",
+              "default": "WITA"
+            },
+            {
+              "key": "tindakan",
+              "label": "Tindakan (diambil dari P raw / Minlap kalau ada)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "anestesi",
+              "label": "Anestesi",
+              "type": "text",
+              "default": "general anestesi"
+            },
+            {
+              "key": "puasa_on",
+              "label": "Masukkan plan puasa 6 jam",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_on",
+              "label": "Masukkan antibiotik profilaksis (1 jam sebelum operasi)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_nama",
+              "label": "Nama antibiotik profilaksis",
+              "type": "text",
+              "default": "Ceftriaxone",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_dosis",
+              "label": "Dosis antibiotik",
+              "type": "text",
+              "default": "1 gr",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_skin_test",
+              "label": "Tambahkan (skin test terlebih dahulu)",
+              "type": "bool",
+              "default": true,
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_on",
+              "label": "Masukkan IVFD",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ivfd_cairan",
+              "label": "Cairan IVFD",
+              "type": "text",
+              "default": "RL",
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "drip_factor",
+              "label": "Set drip (gtt/mL)",
+              "type": "select",
+              "options": [
+                20,
+                60
+              ],
+              "default": 20,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_tpm",
+              "label": "tpm (boleh pakai saran otomatis dari BB)",
+              "type": "int",
+              "min": 0,
+              "max": 200,
+              "default": 0,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "masker",
+              "label": "Gunakan masker bedah saat ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sikat_gigi",
+              "label": "Sikat gigi sebelum tidur & sebelum ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "washlap",
+              "label": "Washlap badan/wajah sebelum masuk kamar operasi",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "siap_prc",
+              "label": "Siap darah 1 bag PRC",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD0": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "dizzy",
+              "label": "Pusing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "nausea",
+              "label": "Mual?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "vomit",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD1": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      }
+    },
+    "Odontogenic cyst": {
+      "aliases": [
+        "Odontogenic cyst",
+        "Odontogenic cyst "
+      ],
+      "stage": {
+        "Awal": {
+          "questions": [
+            {
+              "key": "keluhan",
+              "label": "Keluhan utama (ringkas)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "durasi",
+              "label": "Durasi keluhan",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "batuk_flu_demam",
+              "label": "Sedang batuk/flu/demam?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "alergi",
+              "label": "Ada alergi obat/makanan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "sistemik",
+              "label": "Penyakit sistemik disangkal?",
+              "type": "bool",
+              "default": true
+            }
+          ]
+        },
+        "PreOp": {
+          "questions": [
+            {
+              "key": "tanggal_laporan",
+              "label": "Tanggal laporan",
+              "type": "date",
+              "default": "today"
+            },
+            {
+              "key": "tanggal_operasi",
+              "label": "Tanggal operasi (default H+1)",
+              "type": "date",
+              "default": "tomorrow"
+            },
+            {
+              "key": "jam_operasi",
+              "label": "Jam operasi (HH.MM)",
+              "type": "text",
+              "default": "08.00"
+            },
+            {
+              "key": "zona_waktu",
+              "label": "Zona waktu",
+              "type": "text",
+              "default": "WITA"
+            },
+            {
+              "key": "tindakan",
+              "label": "Tindakan (diambil dari P raw / Minlap kalau ada)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "anestesi",
+              "label": "Anestesi",
+              "type": "text",
+              "default": "general anestesi"
+            },
+            {
+              "key": "puasa_on",
+              "label": "Masukkan plan puasa 6 jam",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_on",
+              "label": "Masukkan antibiotik profilaksis (1 jam sebelum operasi)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_nama",
+              "label": "Nama antibiotik profilaksis",
+              "type": "text",
+              "default": "Ceftriaxone",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_dosis",
+              "label": "Dosis antibiotik",
+              "type": "text",
+              "default": "1 gr",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_skin_test",
+              "label": "Tambahkan (skin test terlebih dahulu)",
+              "type": "bool",
+              "default": true,
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_on",
+              "label": "Masukkan IVFD",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ivfd_cairan",
+              "label": "Cairan IVFD",
+              "type": "text",
+              "default": "RL",
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "drip_factor",
+              "label": "Set drip (gtt/mL)",
+              "type": "select",
+              "options": [
+                20,
+                60
+              ],
+              "default": 20,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_tpm",
+              "label": "tpm (boleh pakai saran otomatis dari BB)",
+              "type": "int",
+              "min": 0,
+              "max": 200,
+              "default": 0,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "masker",
+              "label": "Gunakan masker bedah saat ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sikat_gigi",
+              "label": "Sikat gigi sebelum tidur & sebelum ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "washlap",
+              "label": "Washlap badan/wajah sebelum masuk kamar operasi",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "siap_prc",
+              "label": "Siap darah 1 bag PRC",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD0": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "dizzy",
+              "label": "Pusing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "nausea",
+              "label": "Mual?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "vomit",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD1": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      }
+    },
+    "Fistula orocutaneous": {
+      "aliases": [
+        "Fistula orocutaneous",
+        "Fistula orocutaneous "
+      ],
+      "stage": {
+        "Awal": {
+          "questions": [
+            {
+              "key": "keluhan",
+              "label": "Keluhan utama (ringkas)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "durasi",
+              "label": "Durasi keluhan",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "batuk_flu_demam",
+              "label": "Sedang batuk/flu/demam?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "alergi",
+              "label": "Ada alergi obat/makanan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "sistemik",
+              "label": "Penyakit sistemik disangkal?",
+              "type": "bool",
+              "default": true
+            }
+          ]
+        },
+        "PreOp": {
+          "questions": [
+            {
+              "key": "tanggal_laporan",
+              "label": "Tanggal laporan",
+              "type": "date",
+              "default": "today"
+            },
+            {
+              "key": "tanggal_operasi",
+              "label": "Tanggal operasi (default H+1)",
+              "type": "date",
+              "default": "tomorrow"
+            },
+            {
+              "key": "jam_operasi",
+              "label": "Jam operasi (HH.MM)",
+              "type": "text",
+              "default": "08.00"
+            },
+            {
+              "key": "zona_waktu",
+              "label": "Zona waktu",
+              "type": "text",
+              "default": "WITA"
+            },
+            {
+              "key": "tindakan",
+              "label": "Tindakan (diambil dari P raw / Minlap kalau ada)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "anestesi",
+              "label": "Anestesi",
+              "type": "text",
+              "default": "general anestesi"
+            },
+            {
+              "key": "puasa_on",
+              "label": "Masukkan plan puasa 6 jam",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_on",
+              "label": "Masukkan antibiotik profilaksis (1 jam sebelum operasi)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_nama",
+              "label": "Nama antibiotik profilaksis",
+              "type": "text",
+              "default": "Ceftriaxone",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_dosis",
+              "label": "Dosis antibiotik",
+              "type": "text",
+              "default": "1 gr",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_skin_test",
+              "label": "Tambahkan (skin test terlebih dahulu)",
+              "type": "bool",
+              "default": true,
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_on",
+              "label": "Masukkan IVFD",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ivfd_cairan",
+              "label": "Cairan IVFD",
+              "type": "text",
+              "default": "RL",
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "drip_factor",
+              "label": "Set drip (gtt/mL)",
+              "type": "select",
+              "options": [
+                20,
+                60
+              ],
+              "default": 20,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_tpm",
+              "label": "tpm (boleh pakai saran otomatis dari BB)",
+              "type": "int",
+              "min": 0,
+              "max": 200,
+              "default": 0,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "masker",
+              "label": "Gunakan masker bedah saat ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sikat_gigi",
+              "label": "Sikat gigi sebelum tidur & sebelum ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "washlap",
+              "label": "Washlap badan/wajah sebelum masuk kamar operasi",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "siap_prc",
+              "label": "Siap darah 1 bag PRC",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD0": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "dizzy",
+              "label": "Pusing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "nausea",
+              "label": "Mual?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "vomit",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD1": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      }
+    },
+    "TMD": {
+      "aliases": [
+        "TMD"
+      ],
+      "stage": {
+        "Awal": {
+          "questions": [
+            {
+              "key": "nyeri_tmj",
+              "label": "Nyeri sendi rahang (TMJ) kanan/kiri/bilateral",
+              "type": "text",
+              "default": "kanan dan kiri"
+            },
+            {
+              "key": "durasi",
+              "label": "Durasi keluhan (mis. 1 bulan)",
+              "type": "text",
+              "default": "1 bulan"
+            },
+            {
+              "key": "pencetus",
+              "label": "Muncul saat apa? (mengunyah/menguap/buka mulut)",
+              "type": "text",
+              "default": "mengunyah"
+            },
+            {
+              "key": "klik",
+              "label": "Clicking?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "popping",
+              "label": "Popping?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "deviasi",
+              "label": "Deviasi mandibula?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "deviasi_ke",
+              "label": "Deviasi ke arah",
+              "type": "text",
+              "default": "sinistra",
+              "show_if": {
+                "key": "deviasi",
+                "equals": true
+              }
+            },
+            {
+              "key": "bukaan_mm",
+              "label": "Bukaan mulut (mm)",
+              "type": "int",
+              "min": 0,
+              "max": 70,
+              "default": 35
+            },
+            {
+              "key": "batuk_flu_demam",
+              "label": "Sedang demam/flu/batuk?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "alergi",
+              "label": "Ada alergi obat/makanan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "sistemik",
+              "label": "Penyakit sistemik disangkal?",
+              "type": "bool",
+              "default": true
+            }
+          ]
+        },
+        "PreOp": {
+          "questions": [
+            {
+              "key": "tanggal_laporan",
+              "label": "Tanggal laporan",
+              "type": "date",
+              "default": "today"
+            },
+            {
+              "key": "tanggal_operasi",
+              "label": "Tanggal operasi (default H+1)",
+              "type": "date",
+              "default": "tomorrow"
+            },
+            {
+              "key": "jam_operasi",
+              "label": "Jam operasi (HH.MM)",
+              "type": "text",
+              "default": "08.00"
+            },
+            {
+              "key": "zona_waktu",
+              "label": "Zona waktu",
+              "type": "text",
+              "default": "WITA"
+            },
+            {
+              "key": "tindakan",
+              "label": "Tindakan (diambil dari P raw / Minlap kalau ada)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "anestesi",
+              "label": "Anestesi",
+              "type": "text",
+              "default": "general anestesi"
+            },
+            {
+              "key": "puasa_on",
+              "label": "Masukkan plan puasa 6 jam",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_on",
+              "label": "Masukkan antibiotik profilaksis (1 jam sebelum operasi)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_nama",
+              "label": "Nama antibiotik profilaksis",
+              "type": "text",
+              "default": "Ceftriaxone",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_dosis",
+              "label": "Dosis antibiotik",
+              "type": "text",
+              "default": "1 gr",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_skin_test",
+              "label": "Tambahkan (skin test terlebih dahulu)",
+              "type": "bool",
+              "default": true,
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_on",
+              "label": "Masukkan IVFD",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ivfd_cairan",
+              "label": "Cairan IVFD",
+              "type": "text",
+              "default": "RL",
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "drip_factor",
+              "label": "Set drip (gtt/mL)",
+              "type": "select",
+              "options": [
+                20,
+                60
+              ],
+              "default": 20,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_tpm",
+              "label": "tpm (boleh pakai saran otomatis dari BB)",
+              "type": "int",
+              "min": 0,
+              "max": 200,
+              "default": 0,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "masker",
+              "label": "Gunakan masker bedah saat ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sikat_gigi",
+              "label": "Sikat gigi sebelum tidur & sebelum ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "washlap",
+              "label": "Washlap badan/wajah sebelum masuk kamar operasi",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "siap_prc",
+              "label": "Siap darah 1 bag PRC",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD0": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "dizzy",
+              "label": "Pusing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "nausea",
+              "label": "Mual?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "vomit",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD1": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      }
+    },
+    "Fraktur": {
+      "aliases": [
+        "Fraktur"
+      ],
+      "stage": {
+        "Awal": {
+          "questions": [
+            {
+              "key": "keluhan",
+              "label": "Keluhan utama (ringkas)",
+              "type": "text",
+              "default": "gigi depan atas terdorong ke dalam dan hidung terasa tersumbat"
+            },
+            {
+              "key": "durasi",
+              "label": "Durasi (mis. 16 hari SMRS)",
+              "type": "text",
+              "default": "16 hari SMRS"
+            },
+            {
+              "key": "mekanisme",
+              "label": "Kronologis kejadian (ringkas)",
+              "type": "text",
+              "default": "kecelakaan lalu lintas, wajah membentur"
+            },
+            {
+              "key": "pingsan",
+              "label": "Pingsan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "muntah",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "perdarahan_hidung",
+              "label": "Perdarahan lewat hidung?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "perdarahan_telinga",
+              "label": "Perdarahan lewat telinga?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "perdarahan_mulut",
+              "label": "Perdarahan dari mulut?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "batuk_flu_demam",
+              "label": "Sedang batuk/flu/demam?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "alergi",
+              "label": "Ada alergi obat/makanan?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "sistemik",
+              "label": "Penyakit sistemik disangkal?",
+              "type": "bool",
+              "default": true
+            }
+          ]
+        },
+        "PreOp": {
+          "questions": [
+            {
+              "key": "tanggal_laporan",
+              "label": "Tanggal laporan",
+              "type": "date",
+              "default": "today"
+            },
+            {
+              "key": "tanggal_operasi",
+              "label": "Tanggal operasi (default H+1)",
+              "type": "date",
+              "default": "tomorrow"
+            },
+            {
+              "key": "jam_operasi",
+              "label": "Jam operasi (HH.MM)",
+              "type": "text",
+              "default": "08.00"
+            },
+            {
+              "key": "zona_waktu",
+              "label": "Zona waktu",
+              "type": "text",
+              "default": "WITA"
+            },
+            {
+              "key": "tindakan",
+              "label": "Tindakan (diambil dari P raw / Minlap kalau ada)",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "anestesi",
+              "label": "Anestesi",
+              "type": "text",
+              "default": "general anestesi"
+            },
+            {
+              "key": "puasa_on",
+              "label": "Masukkan plan puasa 6 jam",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_on",
+              "label": "Masukkan antibiotik profilaksis (1 jam sebelum operasi)",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ab_nama",
+              "label": "Nama antibiotik profilaksis",
+              "type": "text",
+              "default": "Ceftriaxone",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_dosis",
+              "label": "Dosis antibiotik",
+              "type": "text",
+              "default": "1 gr",
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ab_skin_test",
+              "label": "Tambahkan (skin test terlebih dahulu)",
+              "type": "bool",
+              "default": true,
+              "show_if": {
+                "key": "ab_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_on",
+              "label": "Masukkan IVFD",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "ivfd_cairan",
+              "label": "Cairan IVFD",
+              "type": "text",
+              "default": "RL",
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "drip_factor",
+              "label": "Set drip (gtt/mL)",
+              "type": "select",
+              "options": [
+                20,
+                60
+              ],
+              "default": 20,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "ivfd_tpm",
+              "label": "tpm (boleh pakai saran otomatis dari BB)",
+              "type": "int",
+              "min": 0,
+              "max": 200,
+              "default": 0,
+              "show_if": {
+                "key": "ivfd_on",
+                "equals": true
+              }
+            },
+            {
+              "key": "masker",
+              "label": "Gunakan masker bedah saat ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sikat_gigi",
+              "label": "Sikat gigi sebelum tidur & sebelum ke kamar operasi",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "washlap",
+              "label": "Washlap badan/wajah sebelum masuk kamar operasi",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "siap_prc",
+              "label": "Siap darah 1 bag PRC",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD0": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "dizzy",
+              "label": "Pusing?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "nausea",
+              "label": "Mual?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "vomit",
+              "label": "Muntah?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        },
+        "POD1": {
+          "questions": [
+            {
+              "key": "pain_present",
+              "label": "Apakah pasien masih nyeri?",
+              "type": "bool",
+              "default": false,
+              "help": "Kalau YA, isi lokasi & skala nyeri (NRS/VAS 0–10)."
+            },
+            {
+              "key": "pain_location",
+              "label": "Lokasi nyeri (kalau ada)",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "pain_score",
+              "label": "Skala nyeri (0–10)",
+              "type": "int",
+              "min": 0,
+              "max": 10,
+              "default": 0,
+              "show_if": {
+                "key": "pain_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "numb_present",
+              "label": "Apakah ada tebal/kebas?",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "numb_location",
+              "label": "Lokasi tebal/kebas",
+              "type": "text",
+              "default": "",
+              "show_if": {
+                "key": "numb_present",
+                "equals": true
+              }
+            },
+            {
+              "key": "eat_drink",
+              "label": "Makan & minum",
+              "type": "select",
+              "options": [
+                "baik",
+                "kurang",
+                "belum"
+              ],
+              "default": "baik"
+            },
+            {
+              "key": "rest",
+              "label": "Istirahat",
+              "type": "select",
+              "options": [
+                "cukup",
+                "kurang"
+              ],
+              "default": "cukup"
+            },
+            {
+              "key": "swelling",
+              "label": "Bengkak/oedem",
+              "type": "select",
+              "options": [
+                "tidak ada",
+                "ada",
+                "berkurang",
+                "bertambah"
+              ],
+              "default": "ada"
+            },
+            {
+              "key": "swelling_location",
+              "label": "Lokasi bengkak (mis. bukalis dextra/sinistra)",
+              "type": "text",
+              "default": "bukalis dextra dan sinistra",
+              "show_if": {
+                "key": "swelling",
+                "in": [
+                  "ada",
+                  "berkurang",
+                  "bertambah"
+                ]
+              }
+            },
+            {
+              "key": "suture_intact",
+              "label": "Jahitan intak?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "hyperemia",
+              "label": "Hiperemis (+)?",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "blood_clot",
+              "label": "Blood clot",
+              "type": "select",
+              "options": [
+                "(+)",
+                "(-)"
+              ],
+              "default": "(-)"
+            },
+            {
+              "key": "active_bleeding",
+              "label": "Active bleeding (+)?",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      }
+    }
+  },
+  "laporan_operasi": {
+    "Impaksi": "?1. Pasien berbaring dengan posisi supinasi dibawah pengaruh general anastesi \n\n2. Dilakukan disinfeksi pada daerah ekstraoral dan intraoral \n\n3. Drapping daerah operasi\n\n 4. Dilakukan pemasangan pack orofaring \n\n5. Injeksi vasokonstriktor pada daerah regio gigi 48 \n\n6. Insisi daerah operasi menggunakan blade no 15, lakukan diseksi tumpul menggunakan periosteal elevator \n\n7. Dilakukan osteotomi pada daerah operasi dan dilakukan separasi pada gigi 48. Lakukan ekstraksi gigi 48 \n\n8. Kontrol perdarahan \n\n9. Debridement daerah operasi + spooling \n\n10. Lakukan penjahitan pada daerah operasi gigi 48 \n\n11. Hal yang sama dilakukan pada gigi 18 \n\n12. Injeksi Vasokosntriktor pada regio gigi 38 \n\n13. Insisi pada daerah bukal gigi 38 meluas ke arah retromolar pad \n\n14. Diseksi tumpul menggunakan periosteal elevator pada daerah operasi, Osteotomi pada daerah operasi \n\n15. Separasi gigi 38, pengeluaran (ekstraksi) gigi 38 \n\n16. Lakukan penjahitan pada daerah operasi \n\n17. Hal yang sama dilakukan pada region gigi 28 \n\n18. Kontrol Perdarahan \n\n19. Debridement dan spooling daerah operasi \n\n20. Bebat kasa pada daerah operasi \n\n21. Bersihkan daerah operasi \n\n22. Pengangkatan pack \n\n23. Operasi selesai",
+    "Abses": "1. Pasien berbaring dengan posisi supinasi dibawah pengaruh general anestesi\n\n2. Dilakukan disinfeksi pada daerah ekstraoral dan intraoral\n\n3. Drapping daerah operasi \n\n4.Dilakukan injeksi vasokonstriktor pada daerah operasi intra oral pada regio gigi 48\n\n5. Dilakukan pencabutan gigi 48\n\n6.Dilakukan kontrol perdarahan\n\n7. Dilakukan insisi intraoral pada mukosa sepanjang 1,5 cm dengan blade no 11 pada vestibulum regio gigi 48\n\n8. Dilakukan kuretasi dan irigasi dengan NaCl 0.9% \n\n9. Dilakukan kontrol perdarahan \n\n10. Dilakukan massage pada daerah pembengkakan untuk mendrainage abses dengan pus discharge ± 10cc\n\n11. Dilakukan pemasangan karet drainase pada soket gigi 48\n\n12.  Bersihkan daerah operasi\n\n13. Operasi selesai",
+    "Selulitis": "1. Pasien berbaring dengan posisi supinasi dibawah pengaruh general anastesi\n\n2. Dilakukan disinfeksi pada daerah intraoral\n\n3. Drapping daerah operasi\n\n4. Dilakukan pemasangan pack orofaring\n\n5. Injeksi vasokonstriktor pada daerah gigi sumber infeksi \n\n6. Dilakukan Pencabutan gigi sumber infeksi\n\n7. Dilakukan kuretase\n\n8. Dilakukan spooling NaCl 0.9 %\n\n9. Dilakukan kontrol perdarahan\n\n10. Dilakukan Insisi intra oral dengan menggunakan blade No. 11\n\n11. Lakukan diseksi tumpul dan eksplorasi pada daerah bukal sinistra dan vestibulum ar gigi 37\n\n12. Dilakukan massage pada daerah pembengkakan untuk mendrainage abses\n\n13. Dilakukan pemasangan drain intraoral\n\n14. Kontrol Perdarahan\n\n15. Bersihkan daerah operasi\n\n16. Pengangkatan pack orofaring\n\n17. Operasi selesai",
+    "Tumor": "1. Pasien berbaring dengan posisi supinasi dibawah pengaruh general anastesi \n2. Dilakukan disinfeksi pada daerah ekstraoral dan intraoral \n3. Drapping daerah operasi\n4. Dilakukan pemasangan pack orofaring \n5. Injeksi vasokonstriktor pada daerah bukalis sinistra \n6. Dilakukan marking pada daerah operasi bukalis sinistra \n7. Dilakukan insisi linear menggunakan blade no 15 dan cauter pada batas luar massa tumor \n8. Dilakukan diseksi tumpul pada basis massa\n9. Dilakukan identifikasi massa tumor dengan ukuran 4x2x1cm\n10. Dilakukan pemisahan massa dari jaringan sekitarnya \n11. Dilakukan pengambilan massa \n12. Dilakukan kontrol pendarahan \n13. Dilakukan spooling dengan Nacl 0,9 % \n14. Dilakukan penjahitan daerah operasi menggunakan vicryl 4-0 \n15. Dilakukan spooling dengan NaCl 0.9 % pada daerah operasi \n16. Bersihkan daerah operasi\n17. Dilakukan pengangkatan packorofaring \n18. Operasi Selesai",
+    "Odontogenic cyst": "1. Pasien posisi supine dalam pengaruh general anestesi\n\n2. Disinfeksi ekstra oral dan intra oral\n\n3. Dilakukan pemasangan drapping\n\n4. Dilakukan pemasangan pack orofaring\n\n5. Dilakukan Injeksi vasokonstriktor 1:200.000 pada daerah operasi gigi 32 - 36\n\n6. Dilakukan insisi surkular menggunakan blade no.15 pada regio Posterior mandibula sinistra gigi 32 - 36\n\n7. Dilakukan diseksi flap menggunakan periosteal elevator pada daerah regio gigi 32 - 36\n\n8. Dilakukan identifikasi kista pada daerah operasi \n\n9. Dilakukan pengangkatan kantong kista dan jaringan lunak dengan Ukuran 4 x 4 x 4 cm ar gigi 33-34 dengan menggunakan klem ellis \n\n10. Dilakukan ekstraksi gigi 34 \n\n11. Dilakukan kuretase jaringan granulasi\n\n12. Debridement daerah operasi + spooling NaCl 0.9%\n\n13. Dilakukan cuci luka dengan NaCl 0.9% pada daerah operasi\n\n14. Kontrol perdarahan\n\n15. Aplikasi Gentamycin ampul pada daerah operasi \n\n16. Dilakukan penjahitan daerah operasi menggunakan vicryl 4-0\n\n17. Dilakukan pengangkatan packorofaring\n\n18. Dilakukan pembersihan daerah operasi\n\n19. Operasi Selesai",
+    "Fistula orocutaneous": "1. Pasien berbaring dengan posisi supinasi dibawah pengaruh general anastesi \n2. Dilakukan disinfeksi pada daerah ekstraoral dan intraoral \n3. Drapping daerah operasi\n4. Dilakukan pemasangan pack orofaring \n5. Injeksi vasokonstriktor pada daerah bukalis sinistra \n6. Dilakukan marking pada daerah operasi bukalis sinistra \n7. Dilakukan insisi linear menggunakan blade no 15 dan cauter pada batas luar massa tumor \n8. Dilakukan diseksi tumpul pada basis massa\n9. Dilakukan identifikasi massa tumor dengan ukuran 4x2x1cm\n10. Dilakukan pemisahan massa dari jaringan sekitarnya \n11. Dilakukan pengambilan massa \n12. Dilakukan kontrol pendarahan \n13. Dilakukan spooling dengan Nacl 0,9 % \n14. Dilakukan penjahitan daerah operasi menggunakan vicryl 4-0 \n15. Dilakukan spooling dengan NaCl 0.9 % pada daerah operasi \n16. Bersihkan daerah operasi\n17. Dilakukan pengangkatan packorofaring \n18. Operasi Selesai",
+    "TMD": "1.        Pasien berbaring dengan posisi supinasi dibawah pengaruh general anastesi\n\n2.        Dilakukan disinfeksi pada daerah ekstraoral\n\n3.        Drapping daerah operasi\n\n4.        Dilakukan penandaan daerah operasi area lateral kantus ke tragus dextra\n\n5.        Dilakukan marking posisi kanula pertama 10 mm dari tragus dan 2 mm tegak lurus terhadap marking garis\n\n6.        Dilakukan marking posisi kanula kedua 10 mm dari kanula pertama dan 10 mm tegak lurus terhadap marking garis\n\n7.        Dilakukan injeksi larutan anestesi secara subkutan pada daerah titik masuk kanula\n\n8.        Kanula berukuran 21 gauge dimasukkan pada titik pertama dan kedua sambil mandibula dibuka untuk mengoptimalkan lavage sendi\n\n9.        Dilakukan penyuntikan 50 ml NaCl selama sekitar 20 menit melalui kanula pertama dan keluar melalui kanula kedua\n\n10.        Dilakukan injeksi I-PRF sebanyak 1 mL di titik posisi kanula pertama\n\n11.        Evaluasi bukaan mulut\n\n12.        Bersihkan daerah operasi\n\n13.        Operasi selesai",
+    "Fraktur": "1. Pasien posisi supine dalam general anestesi \n2. Disinfeksi ekstra oral dan intra oral dengan povidon iodine \n3. Dilakukan drapping dan pemasangan pack orofaring \n4. Dilakukan injeksi vasokonstriktor pada daerah operasi regio vestibulum maksila\n5. Dilakukan wound debridement pada daerah  vestibulum gigi 12-22\n6. Dilakukan pencabutan gigi 21, 36, 46\n7. Dilakukan cuci luka daerah operasi dengan NaCl 0.9%\n8. Dilakukan penjahitan pada vestibulum dan soket gigi 36, 46\n9. dilakukan Reposisi dan reduksi septum nasal\n10. Dilakukan penjahitan plint nose dextra untuk imobilisasi\n11. Dilakukan pemasangan fiksasi akrilik plint untuk imobilisasi\n12. Bersihkan daerah operasi \n13. Dilakukan pengambilan pack orofaring \n14. Operasi selesai"
+  }
+}
