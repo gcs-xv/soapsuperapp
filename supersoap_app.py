@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, date
 from dateutil import tz
 import streamlit as st
 
-TZ = tz.gettz("Asia/Makassar")  # sesuai user timezone
+TZ = tz.gettz("Asia/Makassar")
 DAY_ID = {
     "Monday": "Senin", "Tuesday": "Selasa", "Wednesday": "Rabu",
     "Thursday": "Kamis", "Friday": "Jumat", "Saturday": "Sabtu", "Sunday": "Minggu",
@@ -53,11 +53,11 @@ def tpm_from_ml_per_hr(ml_per_hr: float, drip_factor_gtt_per_ml: int = 20) -> in
     return int(round((float(ml_per_hr) * int(drip_factor_gtt_per_ml)) / 60.0))
 
 def normalize_minlap_block(text: str) -> str:
-    # NOTE: user minta "jangan ubah spasi/bullet". Jadi kita simpan apa adanya.
+    # MUST preserve formatting
     return text.strip("\n")
 
 # -------------------------
-# Minimal parsers (SOAP raw + MINLAP)
+# Minimal parsers (ONLY for PreOp)
 # -------------------------
 @dataclass
 class ParsedInfo:
@@ -80,7 +80,6 @@ class ParsedInfo:
     residen: str = ""
 
 def parse_identity_line(text: str):
-    # contoh: "Nn. X / P / 24 Tahun / Rawat Jalan / BPJS / RSGMP UNHAS / RM 10.82.79"
     m = re.search(r"^(Tn\.|Ny\.|Nn\.|An\.)[^\n]+", text, re.MULTILINE | re.IGNORECASE)
     if not m:
         return None
@@ -89,24 +88,20 @@ def parse_identity_line(text: str):
     return parts
 
 def extract_tindakan_from_P(raw: str) -> tuple[str,str]:
-    # cari blok P:
     m = re.search(r"\n\s*P\s*:\s*(.*)$", raw, re.IGNORECASE | re.DOTALL)
     if not m:
         return "", ""
     pblock = m.group(1)
-    # ambil baris "Pro ...."
     lines = [ln.strip() for ln in pblock.splitlines() if ln.strip()]
     pro_lines = [ln for ln in lines if re.search(r"\bPro\b", ln, re.IGNORECASE)]
     if not pro_lines:
         return "", ""
     last = pro_lines[-1]
-    # contoh: "Pro Odontektomi ... dalam general anestesi (menunggu penjadwalan)"
     m2 = re.search(r"\bPro\b\s*(.+?)(?:\s+dalam\s+([^.]+?))?(?:\(|$|\.)", last, re.IGNORECASE)
     if not m2:
         return "", ""
     tindakan = clean(m2.group(1))
     anestesi = clean(m2.group(2)) if m2.group(2) else ""
-    # bersihkan "menunggu penjadwalan" dll
     tindakan = re.sub(r"\s*\(.*?\)\s*$", "", tindakan).strip()
     return tindakan, anestesi
 
@@ -131,8 +126,6 @@ def parse_minlap(minlap: str) -> ParsedInfo:
         p.nama = parts[0]
         if len(parts) > 1: p.jk = parts[1]
         if len(parts) > 2: p.umur = parts[2]
-        # minlap kadang urutan rawat jalan/inap dan BPJS bisa kebalik
-        # kita ambil yang mengandung "Rawat"
         for x in parts:
             if "rawat" in x.lower():
                 p.perawatan = x
@@ -141,32 +134,30 @@ def parse_minlap(minlap: str) -> ParsedInfo:
                 p.pembiayaan = x
         mrm = re.search(r"RM\.?\s*([0-9.]+)", t, re.IGNORECASE)
         if mrm: p.rm = mrm.group(1).strip()
-    # BB/TB dari baris "BB:  49 kg, TB: 159  cm"
     p.bb, p.tb = parse_bb_tb(t)
-    # Penunjang raw block (dari "Pemeriksaan penunjang" sampai sebelum "A :")
     mpen = re.search(r"Pemeriksaan\s+penunjang\s*:\s*(.*?)(?:\n\s*A\s*:|\n\s*A\s*：|\n\s*A\s*\n|$)", t, re.IGNORECASE | re.DOTALL)
     if mpen:
-        block = mpen.group(0).strip()
+        block = "Pemeriksaan penunjang :\n" + mpen.group(1).rstrip()
         p.penunjang_raw = normalize_minlap_block(block)
-    # Tindakan dari "P : Pro ...."
     mt = re.search(r"\n\s*P\s*:\s*(.+)", t, re.IGNORECASE)
     if mt:
         tindakan_line = mt.group(1).strip()
         tindakan_line = re.sub(r"^\W*\bPro\b\s*", "", tindakan_line, flags=re.IGNORECASE).strip()
         tindakan_line = re.sub(r"\s+dalam\s+.*$", "", tindakan_line, flags=re.IGNORECASE).strip()
         p.tindakan = tindakan_line
-    # Jam operasi dari "Pukul : *08.00 WITA*"
     mj = re.search(r"Pukul\s*:\s*\*?([0-9]{1,2}\.[0-9]{2})\s*([A-Z]{3,4})\*?", t, re.IGNORECASE)
     if mj:
         p.jam_operasi = mj.group(1)
         p.zona = mj.group(2).upper()
-    # DPJP
     md = re.search(r"DPJP\s*:\s*(.+)", t, re.IGNORECASE)
     if md:
         p.dpjp = md.group(1).strip()
+    mr = re.search(r"Residen\s*:\s*(.*?)(?:\n\s*DPJP\s*:|$)", t, re.IGNORECASE | re.DOTALL)
+    if mr:
+        p.residen = mr.group(1).strip()
     return p
 
-def parse_rawsoap(raw: str) -> ParsedInfo:
+def parse_rawsoap_preop(raw: str) -> ParsedInfo:
     p = ParsedInfo()
     t = raw.strip()
     if not t:
@@ -176,7 +167,6 @@ def parse_rawsoap(raw: str) -> ParsedInfo:
         p.nama = parts[0]
         if len(parts) > 1: p.jk = parts[1]
         if len(parts) > 2: p.umur = parts[2]
-        # ambil perawatan & pembiayaan dari parts
         for x in parts:
             if "rawat" in x.lower():
                 p.perawatan = x
@@ -198,7 +188,7 @@ def parse_rawsoap(raw: str) -> ParsedInfo:
     return p
 
 # -------------------------
-# Schema-driven renderer
+# Schema-driven UI
 # -------------------------
 def should_show(q, answers):
     cond = q.get("show_if")
@@ -238,160 +228,85 @@ def render_question(q, answers, tutorial=False):
     else:
         st.warning(f"Tipe pertanyaan belum didukung: {t}")
 
-def build_S(stage, case_name, a):
-    # Subjective templates by stage
-    if stage in ["POD0","POD1"]:
-        sents = []
-        if not a.get("pain_present"):
-            sents.append("Tidak ada keluhan nyeri pada daerah operasi.")
-        else:
-            loc = clean(a.get("pain_location","daerah operasi"))
-            sc = a.get("pain_score",0)
-            sents.append(f"Ada keluhan nyeri pada {loc} dengan skala VAS {sc}/10.")
-        if not a.get("numb_present"):
-            sents.append("Tidak ada keluhan tebal dan kebas.")
-        else:
-            loc = clean(a.get("numb_location","daerah operasi"))
-            sents.append(f"Ada keluhan tebal dan kebas pada {loc}.")
-        if stage=="POD0":
-            # pusing/mual/muntah
-            flags = []
-            if a.get("dizzy"): flags.append("pusing")
-            if a.get("nausea"): flags.append("mual")
-            if a.get("vomit"): flags.append("muntah")
-            if flags:
-                sents.append("Ada keluhan " + ", ".join(flags) + ".")
-            else:
-                sents.append("Tidak ada keluhan pusing, mual, dan muntah.")
-        # makan-minum & istirahat
-        ed = a.get("eat_drink","baik")
-        if ed=="baik":
-            sents.append("Pasien makan dan minum dengan baik.")
-        elif ed=="kurang":
-            sents.append("Pasien makan dan minum namun masih kurang.")
-        else:
-            sents.append("Pasien belum makan dan minum.")
-        if a.get("rest","cukup")=="cukup":
-            sents.append("Istirahat dirasa cukup." if stage=="POD0" else "Istirahat malam dirasa cukup.")
-        else:
-            sents.append("Istirahat dirasa kurang." if stage=="POD0" else "Istirahat malam dirasa kurang.")
-        return " ".join(sents)
-
+# -------------------------
+# Generators (simple but coherent)
+# -------------------------
+def build_header(stage, laporan_date: date, info: ParsedInfo):
+    hari = day_name_id(laporan_date)
+    if stage=="PreOp":
+        return f"Assalamualaikum dokter.\nMaaf mengganggu, izin melaporkan Pasien Rencana Operasi {info.rs}, {hari} ({fmt_ddmmyyyy(laporan_date)})\n"
     if stage=="Awal":
-        if case_name=="Impaksi":
-            kel = clean(a.get("keluhan",""))
-            dur = clean(a.get("durasi",""))
-            gigi = clean(a.get("gigi_list",""))
-            menjalar = a.get("menjalar", False)
-            menjalar_ke = clean(a.get("menjalar_ke",""))
-            s = f"Pasien datang dengan keluhan {kel} sejak ± {dur}."
-            if menjalar:
-                s += f" Keluhan nyeri menjalar hingga ke {menjalar_ke}."
-            if gigi:
-                s += f" Gigi terkait: {gigi}."
-            # sistemik
-            if not a.get("alergi", False):
-                s += " Tidak ada riwayat alergi obat dan makanan."
-            else:
-                s += " Ada riwayat alergi obat dan/atau makanan."
-            if a.get("sistemik", True):
-                s += " Riwayat penyakit sistemik disangkal."
-            if not a.get("batuk_flu_demam", False):
-                s += " Pasien tidak dalam keadaan batuk, flu dan demam."
-            else:
-                s += " Pasien sedang batuk/flu/demam."
-            return s
+        return f"Assalamualaikum dokter.\nMaaf mengganggu, izin melaporkan Pasien Rawat Jalan {info.rs}, {hari} ({fmt_ddmmyyyy(laporan_date)})\n"
+    if stage=="POD0":
+        return f"Assalamualaikum dokter.\nMaaf mengganggu, izin melaporkan Pasien Rawat Inap {info.rs}, {hari} ({fmt_ddmmyyyy(laporan_date)})\n"
+    return f"Assalamualaikum dokter.\nMaaf mengganggu, izin melaporkan Pasien Rawat Inap {info.rs}, {hari} ({fmt_ddmmyyyy(laporan_date)})\n"
 
-        if case_name in ["Abses","Selulitis"]:
-            loc = clean(a.get("lokasi_bengkak",""))
-            dur = clean(a.get("durasi",""))
-            s = f"Pasien datang dengan keluhan pembengkakan pada {loc}"
-            if a.get("nyeri", True):
-                s += " disertai rasa nyeri"
-            s += f" sejak ± {dur}."
-            # red flags
-            rf = []
-            if a.get("trismus"): rf.append("trismus (+)")
-            if a.get("hoarseness"): rf.append("hoarseness (+)")
-            if a.get("hot_potato"): rf.append("hot potato voice (+)")
-            if a.get("neck_stiff"): rf.append("neck stiffness (+)")
-            if a.get("difficult_swallow"): rf.append("difficult on swallowing (+)")
-            if a.get("pain_swallow"): rf.append("pain on swallowing (+)")
-            if rf:
-                s += " Riwayat " + ", ".join(rf) + "."
-                if a.get("trismus"):
-                    s += f" Bukaan mulut ± {a.get('bukaan_mulut_mm',10)} mm."
-            if a.get("demam"): s += " Ada riwayat demam."
-            else: s += " Tidak ada riwayat demam."
-            if not a.get("alergi", False):
-                s += " Tidak ada riwayat alergi obat dan makanan."
-            else:
-                s += " Ada riwayat alergi obat dan/atau makanan."
-            if a.get("sistemik", True):
-                s += " Riwayat penyakit sistemik disangkal."
-            if not a.get("batuk_flu", False):
-                s += " Pasien tidak sedang batuk dan flu."
-            else:
-                s += " Pasien sedang batuk/flu."
-            return s
+def build_ident_line(info: ParsedInfo, perawatan_override=""):
+    pemb = info.pembiayaan or "BPJS"
+    per = perawatan_override or info.perawatan or "Rawat Jalan"
+    kamar = f" / {info.kamar}" if info.kamar else ""
+    rm = f"RM {info.rm}" if info.rm else "RM -"
+    return f"{info.nama} / {info.jk} / {info.umur} / {pemb} / {per}{kamar} / {info.rs} / {rm}\n"
 
-        if case_name=="TMD":
-            dur=clean(a.get("durasi",""))
-            s=(f"Pasien datang dengan keluhan nyeri pada daerah sendi rahang {a.get('nyeri_tmj','')} "
-               f"pada saat {clean(a.get('pencetus','mengunyah'))} sejak ± {dur}.")
-            if a.get("klik"): s += " Terdapat clicking (+)."
-            if a.get("popping"): s += " Terdapat popping (+)."
-            if a.get("deviasi"): s += f" Terdapat deviasi mandibula (+) ke arah {clean(a.get('deviasi_ke',''))}."
-            s += f" Bukaan mulut ± {a.get('bukaan_mm',35)} mm."
-            if not a.get("alergi", False): s += " Tidak ada riwayat alergi obat dan makanan."
-            else: s += " Ada riwayat alergi obat dan/atau makanan."
-            if a.get("sistemik", True): s += " Riwayat penyakit sistemik disangkal."
-            if not a.get("batuk_flu_demam", False): s += " Saat ini pasien tidak dalam kondisi demam, flu dan batuk."
-            else: s += " Saat ini pasien dalam kondisi demam/flu/batuk."
-            return s
-
-        if case_name=="Fraktur":
-            s = f"Pasien datang dengan keluhan {clean(a.get('keluhan',''))} sejak ± {clean(a.get('durasi',''))}."
-            s += f" Kronologis kejadian: {clean(a.get('mekanisme',''))}."
-            s += f" Riwayat pingsan ({'-' if not a.get('pingsan') else '+'}), muntah ({'-' if not a.get('muntah') else '+'})."
-            s += f" Perdarahan lewat hidung ({'-' if not a.get('perdarahan_hidung') else '+'}), lewat telinga ({'-' if not a.get('perdarahan_telinga') else '+'}), dari mulut ({'-' if not a.get('perdarahan_mulut') else '+'})."
-            if not a.get("alergi", False): s += " Tidak ada riwayat alergi obat dan makanan."
-            else: s += " Ada riwayat alergi obat dan/atau makanan."
-            if a.get("sistemik", True): s += " Riwayat penyakit sistemik disangkal."
-            if not a.get("batuk_flu_demam", False): s += " Saat ini pasien tidak sedang batuk, flu, demam, dan diare."
-            else: s += " Saat ini pasien sedang batuk/flu/demam."
-            return s
-
-        # fallback
-        kel = clean(a.get("keluhan",""))
+def build_awal_S(case, a):
+    # Short, first-visit oriented
+    if case=="Impaksi":
+        kel = clean(a.get("keluhan","gigi tidak tumbuh"))
         dur = clean(a.get("durasi",""))
-        s = f"Pasien datang dengan keluhan {kel} sejak ± {dur}."
+        s = f"Pasien datang dengan keluhan {kel}"
+        if dur: s += f" sejak ± {dur}."
+        else: s += "."
+        if a.get("menjalar", False):
+            s += f" Nyeri menjalar hingga ke {clean(a.get('menjalar_ke','kepala'))}."
+        if not a.get("alergi", False):
+            s += " Tidak ada riwayat alergi obat dan makanan."
+        if a.get("sistemik", True):
+            s += " Riwayat penyakit sistemik disangkal."
+        if not a.get("batuk_flu_demam", False):
+            s += " Pasien tidak dalam keadaan batuk, flu dan demam."
         return s
 
-    return ""
+    if case in ["Abses","Selulitis"]:
+        loc = clean(a.get("lokasi_bengkak",""))
+        dur = clean(a.get("durasi",""))
+        s = f"Pasien datang dengan keluhan pembengkakan pada {loc}"
+        if a.get("nyeri", True):
+            s += " disertai rasa nyeri"
+        if dur: s += f" sejak ± {dur}."
+        else: s += "."
+        return s
 
-def build_O_local(stage, a):
-    if stage not in ["POD0","POD1"]:
-        return ""
-    lines=[]
-    sw=a.get("swelling","ada")
-    if sw!="tidak ada":
-        lines.append(f"- Wajah asimetris dengan oedem ar {clean(a.get('swelling_location',''))}")
-    else:
-        lines.append("- Wajah simetris")
-    # IO
-    suture = "intak" if a.get("suture_intact", True) else "tidak intak"
-    hyp = "(+)" if a.get("hyperemia", True) else "(-)"
-    bc = a.get("blood_clot","(-)")
-    ab = "(+)" if a.get("active_bleeding", False) else "(-)"
-    io = f"- Jahitan {suture} ar daerah operasi dengan hiperemis {hyp}, blood clot {bc}, active bleeding {ab}"
-    return "\n".join(lines), io
+    # fallback
+    kel = clean(a.get("keluhan",""))
+    dur = clean(a.get("durasi",""))
+    return f"Pasien datang dengan keluhan {kel} sejak ± {dur}."
+
+def build_TTV(a):
+    # Standard TTV block builder from answers
+    td = clean(a.get("td","-/-"))
+    n = clean(a.get("n","-"))
+    p = clean(a.get("p","-"))
+    s = clean(a.get("s","-"))
+    spo2 = clean(a.get("spo2","99"))
+    ku = clean(a.get("ku","Baik/Compos Mentis"))
+    bb = clean(a.get("bb",""))
+    tb = clean(a.get("tb",""))
+    lines = [
+        f"KU : {ku}",
+        f"TD : {td} mmHg",
+        f"N   : {n} x/menit",
+        f"P   : {p} x/menit",
+        f"S   : {s} °C",
+        f"SpO2: {spo2}% (free air)",
+    ]
+    if bb: lines.append(f"BB : {bb} kg")
+    if tb: lines.append(f"TB : {tb} cm")
+    return "\n".join(lines)
 
 def build_preop_plan(a, bb_value):
     plan=[]
-    # ACC always
-    plan.append("ACC TS Anestesi")
-    # IVFD suggestion
+    plan.append("Acc TS Anestesi")
+    # IVFD
     if a.get("ivfd_on", True):
         cairan = clean(a.get("ivfd_cairan","RL")) or "RL"
         drip = int(a.get("drip_factor",20))
@@ -401,20 +316,19 @@ def build_preop_plan(a, bb_value):
             tpm = tpm_from_ml_per_hr(mlhr, drip)
         drip_label = "makrodrips" if drip==20 else "mikrodrips"
         plan.append(f"IVFD {cairan} {tpm} tpm ({drip_label})" if tpm>0 else f"IVFD {cairan} (isi tpm) ({drip_label})")
-
+    # times
     jam = clean(a.get("jam_operasi","08.00"))
     zona = clean(a.get("zona_waktu","WITA"))
     op = parse_hhmm(jam)
+    puasa_jam = "(isi)"
+    ab_jam = "(isi)"
     if op:
         ph, pm = minus_minutes(op[0], op[1], 6*60)
         ah, am = minus_minutes(op[0], op[1], 60)
         puasa_jam = fmt_time(ph, pm)
         ab_jam = fmt_time(ah, am)
-    else:
-        puasa_jam = ""
-        ab_jam = ""
     if a.get("puasa_on", True):
-        plan.append(f"Puasa 6 jam pre op atau sesuai instruksi dari TS. Anestesi yaitu mulai Pukul {puasa_jam or '(isi)'} {zona}")
+        plan.append(f"Puasa 6 jam pre op atau sesuai instruksi dari TS. Anestesi yaitu mulai Pukul {puasa_jam} {zona}")
     if a.get("sikat_gigi", True):
         plan.append("Pasien menyikat gigi sebelum tidur dan sebelum ke kamar operasi")
     if a.get("masker", True):
@@ -426,27 +340,45 @@ def build_preop_plan(a, bb_value):
     if a.get("ab_on", True):
         ab = " ".join([clean(a.get("ab_nama","")), clean(a.get("ab_dosis",""))]).strip() or "(isi antibiotik)"
         skin = " (skin test terlebih dahulu)" if a.get("ab_skin_test", True) else ""
-        plan.append(f"Pasien rencana diberikan antibiotik profilaksis {ab}, 1 jam sebelum operasi{skin} pada Pukul {ab_jam or '(isi)'} {zona}")
+        plan.append(f"Pasien rencana diberikan antibiotik profilaksis {ab}, 1 jam sebelum operasi{skin} pada Pukul {ab_jam} {zona}")
     return plan
 
-def build_header(stage, laporan_date: date, info: ParsedInfo, tindakan="", op_day=None):
-    hari = day_name_id(laporan_date)
-    if stage=="PreOp":
-        return f"Assalamualaikum dokter.\nMaaf mengganggu, izin melaporkan Pasien Rencana Operasi {info.rs}, {hari} ({fmt_ddmmyyyy(laporan_date)})\n"
-    elif stage=="Awal":
-        return f"Assalamualaikum dokter.\nMaaf mengganggu, izin melaporkan Pasien {info.perawatan or 'Rawat Jalan'} {info.rs}, {hari} ({fmt_ddmmyyyy(laporan_date)})\n"
+def build_pod_S(stage, a):
+    # POD0/1 standardized questions → standardized sentences
+    sents=[]
+    if not a.get("pain_present"):
+        sents.append("Tidak ada keluhan nyeri pada daerah operasi.")
     else:
-        tag = "POD 0" if stage=="POD0" else "POD I"
-        t = tindakan or info.tindakan
-        extra = f" *{tag} {t}*" if t else f" *{tag}*"
-        return f"Assalamualaikum dokter,\nMaaf mengganggu, izin melaporkan Pasien Rawat Inap {info.rs}, {hari} ({fmt_ddmmyyyy(laporan_date)})\n{extra}\n"
+        loc = clean(a.get("pain_location","daerah operasi"))
+        sc = a.get("pain_score",0)
+        sents.append(f"Ada keluhan nyeri pada {loc} dengan skala VAS {sc}/10.")
+    if stage=="POD0":
+        flags=[]
+        if a.get("dizzy"): flags.append("pusing")
+        if a.get("nausea"): flags.append("mual")
+        if a.get("vomit"): flags.append("muntah")
+        if flags:
+            sents.append("Ada keluhan " + ", ".join(flags) + ".")
+        else:
+            sents.append("Tidak ada keluhan pusing, mual, dan muntah.")
+    ed = a.get("eat_drink","baik")
+    if ed=="baik": sents.append("Pasien makan dan minum dengan baik.")
+    elif ed=="kurang": sents.append("Pasien makan dan minum namun masih kurang.")
+    else: sents.append("Pasien belum makan dan minum.")
+    if a.get("rest","cukup")=="cukup": sents.append("Istirahat dirasa cukup." if stage=="POD0" else "Istirahat malam dirasa cukup.")
+    else: sents.append("Istirahat dirasa kurang." if stage=="POD0" else "Istirahat malam dirasa kurang.")
+    return " ".join(sents)
 
-def build_ident_line(info: ParsedInfo, pembiayaan_override=""):
-    pemb = pembiayaan_override or info.pembiayaan or "BPJS"
-    per = info.perawatan or "Rawat Inap"
-    kamar = f" / {info.kamar}" if info.kamar else ""
-    rm = f"RM {info.rm}" if info.rm else "RM -"
-    return f"{info.nama} / {info.jk} / {info.umur} / {pemb} / {per}{kamar} / {info.rs} / {rm}\n"
+def build_pod_O(a):
+    # minimal O local for PODs (editable later)
+    sw=a.get("swelling","ada")
+    eo = "- Wajah simetris" if sw=="tidak ada" else f"- Wajah asimetris dengan oedem ar {clean(a.get('swelling_location',''))}"
+    suture = "intak" if a.get("suture_intact", True) else "tidak intak"
+    hyp = "(+)" if a.get("hyperemia", True) else "(-)"
+    bc = a.get("blood_clot","(-)")
+    ab = "(+)" if a.get("active_bleeding", False) else "(-)"
+    io = f"- Jahitan {suture} ar daerah operasi dengan hiperemis {hyp}, blood clot {bc}, active bleeding {ab}"
+    return eo, io
 
 # -------------------------
 # Streamlit App
@@ -454,7 +386,7 @@ def build_ident_line(info: ParsedInfo, pembiayaan_override=""):
 st.set_page_config(page_title="SuperSOAP RSGMP", layout="centered")
 st.title("🧩 SuperSOAP Maker (Awal → Pre-Op → POD0 → POD1)")
 
-schema_path = st.sidebar.text_input("Schema file", value="supersoap_schema_v1.json")
+schema_path = st.sidebar.text_input("Schema file", value="supersoap_schema_v2.json")
 tutorial = st.sidebar.toggle("Tutorial mode", value=True)
 
 try:
@@ -466,6 +398,7 @@ except Exception as e:
 
 case_names = list(schema["cases"].keys())
 stage_names = schema["stages"]
+stage_rules = schema.get("stage_rules", {})
 
 c1, c2 = st.columns(2)
 with c1:
@@ -473,7 +406,7 @@ with c1:
 with c2:
     stage = st.selectbox("Stage", stage_names, index=0)
 
-# Laporan operasi widget
+# Laporan operasi (terpisah)
 st.sidebar.divider()
 if st.sidebar.button("🧾 GET LAPORAN OPERASI", use_container_width=True):
     lo = schema.get("laporan_operasi", {}).get(case)
@@ -483,185 +416,204 @@ if st.sidebar.button("🧾 GET LAPORAN OPERASI", use_container_width=True):
         st.sidebar.info("Belum ada laporan operasi untuk kasus ini di schema.")
 
 st.divider()
-
 if tutorial:
-    st.info("Alur cepat: 1) Paste SOAP mentah &/atau Minlap → 2) Isi pertanyaan → 3) Output siap copy.")
+    if stage=="PreOp":
+        st.info("Pre-Op: paste SOAP poli + MINLAP (kalau ada) → Auto-fill → isi antibiotik/IVFD → Output.")
+    elif stage=="Awal":
+        st.info("Awal: pasien baru datang. Tidak perlu paste. Cukup isi form pertanyaan + TTV + pemeriksaan lokal.")
+    else:
+        st.info(f"{stage}: evaluasi pasca operasi. Tidak perlu paste/minlap. Cukup checklist keluhan & luka.")
 
-tabA, tabB, tabC = st.tabs(["1) Paste", "2) Form", "3) Output"])
-
-# Session storage
+# Session state
 if "answers" not in st.session_state:
     st.session_state["answers"] = {}
-if "parsed" not in st.session_state:
-    st.session_state["parsed"] = ParsedInfo()
+if "info" not in st.session_state:
+    st.session_state["info"] = ParsedInfo()
 
-with tabA:
-    st.subheader("Paste (opsional tapi bikin cepat)")
-    raw = st.text_area("SOAP mentah (kalau ada)", height=220, placeholder="Paste SOAP awal terjaring / POD / apa saja.")
-    minlap = st.text_area("MINLAP (kalau ada) — formatnya dipertahankan", height=220, placeholder="Paste Minlap di sini.")
+tab1, tab2, tab3 = st.tabs(["1) Input", "2) Form", "3) Output"])
 
-    if st.button("Auto-fill dari paste", type="primary", use_container_width=True):
-        parsed = ParsedInfo()
-        if raw.strip():
-            pr = parse_rawsoap(raw)
-            parsed.__dict__.update({k:v for k,v in pr.__dict__.items() if v})
-        if minlap.strip():
-            pm = parse_minlap(minlap)
-            # Minlap lebih dipercaya untuk jam/penujang
-            for k,v in pm.__dict__.items():
-                if v:
-                    setattr(parsed, k, v)
-        st.session_state["parsed"] = parsed
+# -------------------------
+# TAB 1: Input (ONLY PreOp)
+# -------------------------
+with tab1:
+    rules = stage_rules.get(stage, {"allow_paste": False, "allow_minlap": False})
+    if not rules.get("allow_paste") and not rules.get("allow_minlap"):
+        st.success("Untuk stage ini tidak perlu paste apa pun ✅")
+    else:
+        st.subheader("Paste khusus Pre-Op")
+        raw = st.text_area("SOAP mentah (SOAP poli/awal terjaring) — opsional", height=220)
+        minlap = st.text_area("MINLAP — rekomendasi (format dipertahankan)", height=260)
 
-        # prefill answers that match schema keys
-        a = st.session_state["answers"]
-        if parsed.tindakan and "tindakan" in [q["key"] for q in schema["cases"][case]["stage"]["PreOp"]["questions"]]:
-            a["tindakan"] = parsed.tindakan
-        if parsed.anestesi:
-            a["anestesi"] = parsed.anestesi
-        if parsed.jam_operasi:
-            a["jam_operasi"] = parsed.jam_operasi
-        if parsed.zona:
-            a["zona_waktu"] = parsed.zona
+        if st.button("Auto-fill dari paste", type="primary", use_container_width=True):
+            parsed = ParsedInfo()
+            if raw.strip():
+                pr = parse_rawsoap_preop(raw)
+                for k,v in pr.__dict__.items():
+                    if v:
+                        setattr(parsed, k, v)
+            if minlap.strip():
+                pm = parse_minlap(minlap)
+                for k,v in pm.__dict__.items():
+                    if v:
+                        setattr(parsed, k, v)
 
-        # Suggest IVFD tpm if bb available
-        if parsed.bb and parsed.bb > 0:
-            # keep; computed later
-            pass
+            st.session_state["info"] = parsed
+            # prefill common answer keys
+            a = st.session_state["answers"]
+            if parsed.tindakan: a["tindakan"] = parsed.tindakan
+            if parsed.anestesi: a["anestesi"] = parsed.anestesi
+            if parsed.jam_operasi: a["jam_operasi"] = parsed.jam_operasi
+            if parsed.zona: a["zona_waktu"] = parsed.zona
+            st.session_state["answers"] = a
+            st.success("Auto-fill selesai. Lanjut ke tab 2) Form.")
 
-        # if stage is PreOp, we want penunjang raw from minlap
-        st.success("Auto-fill selesai. Lanjut ke tab 2) Form.")
+        with st.expander("Preview hasil auto-fill"):
+            st.write(st.session_state["info"])
 
-    parsed = st.session_state["parsed"]
-    with st.expander("Lihat hasil auto-fill"):
-        st.write(parsed)
+# -------------------------
+# TAB 2: Form
+# -------------------------
+with tab2:
+    info = st.session_state["info"]
+    a = st.session_state["answers"]
 
-with tabB:
-    parsed = st.session_state["parsed"]
-    st.subheader("Identitas (cepat)")
-    nama = st.text_input("Nama (Tn./Ny./Nn./An.)", value=parsed.nama)
-    jk = st.text_input("JK", value=parsed.jk)
-    umur = st.text_input("Umur", value=parsed.umur)
-    pembiayaan = st.text_input("Pembiayaan", value=parsed.pembiayaan or "BPJS")
-    perawatan_default = "Rawat Inap" if stage in ["PreOp","POD0","POD1"] else (parsed.perawatan or "Rawat Jalan")
-    perawatan = st.text_input("Jenis Perawatan", value=perawatan_default)
-    kamar = st.text_input("Kamar/Bed (opsional)", value=parsed.kamar)
-    rm = st.text_input("RM", value=parsed.rm)
-    rs = st.text_input("RS", value=parsed.rs or "RSGMP UNHAS")
+    st.subheader("Identitas")
+    nama = st.text_input("Nama (Tn./Ny./Nn./An.)", value=info.nama)
+    jk = st.text_input("JK", value=info.jk)
+    umur = st.text_input("Umur", value=info.umur)
+    pembiayaan = st.text_input("Pembiayaan", value=info.pembiayaan or "BPJS")
+    if stage=="PreOp":
+        perawatan_default = "Rawat Inap"
+    elif stage in ["POD0","POD1"]:
+        perawatan_default = "Rawat Inap"
+    else:
+        perawatan_default = "Rawat Jalan"
+    perawatan = st.text_input("Jenis Perawatan", value=info.perawatan or perawatan_default)
+    kamar = st.text_input("Kamar/Bed (opsional)", value=info.kamar)
+    rm = st.text_input("RM", value=info.rm)
+    rs = st.text_input("RS", value=info.rs or "RSGMP UNHAS")
 
-    bb = st.number_input("BB (kg) — untuk saran IVFD", min_value=0.0, max_value=250.0, value=float(parsed.bb or 0.0), step=0.1)
-    tb = st.number_input("TB (cm)", min_value=0.0, max_value=250.0, value=float(parsed.tb or 0.0), step=0.1)
+    bb = st.number_input("BB (kg)", min_value=0.0, max_value=250.0, value=float(info.bb or 0.0), step=0.1)
+    tb = st.number_input("TB (cm)", min_value=0.0, max_value=250.0, value=float(info.tb or 0.0), step=0.1)
 
     st.divider()
-    st.subheader(f"Form — {case} / {stage}")
-    answers = st.session_state["answers"]
-    # inject some defaults for PreOp date fields
-    for q in schema["cases"][case]["stage"][stage]["questions"]:
-        if q["type"]=="date":
-            if q["default"]=="today" and q["key"] not in answers:
-                answers[q["key"]] = datetime.now(TZ).date()
-            if q["default"]=="tomorrow" and q["key"] not in answers:
-                answers[q["key"]] = datetime.now(TZ).date() + timedelta(days=1)
-    # render questions
-    for q in schema["cases"][case]["stage"][stage]["questions"]:
-        if should_show(q, answers):
-            # prefill from parsed for some keys
-            if q["key"]=="tindakan" and not answers.get("tindakan") and parsed.tindakan:
-                answers["tindakan"] = parsed.tindakan
-            if q["key"]=="jam_operasi" and not answers.get("jam_operasi") and parsed.jam_operasi:
-                answers["jam_operasi"] = parsed.jam_operasi
-            if q["key"]=="zona_waktu" and not answers.get("zona_waktu") and parsed.zona:
-                answers["zona_waktu"] = parsed.zona
-            # suggested tpm
-            if q["key"]=="ivfd_tpm" and (not answers.get("ivfd_tpm")) and bb>0:
-                drip = int(answers.get("drip_factor", q.get("default",20)))
+
+    # TTV for Awal/PODs (PreOp typically already has it, but we can keep optional)
+    if stage in ["Awal","POD0","POD1"]:
+        st.subheader("TTV (isi cepat)")
+        a["ku"] = st.text_input("KU", value=a.get("ku","Baik/Compos Mentis"))
+        a["td"] = st.text_input("TD", value=a.get("td","-/-"))
+        a["n"]  = st.text_input("N", value=a.get("n","-"))
+        a["p"]  = st.text_input("P", value=a.get("p","-"))
+        a["s"]  = st.text_input("S", value=a.get("s","36.7"))
+        a["spo2"] = st.text_input("SpO2", value=a.get("spo2","99"))
+        a["bb"] = str(bb) if bb else a.get("bb","")
+        a["tb"] = str(tb) if tb else a.get("tb","")
+
+        st.subheader("Pemeriksaan lokal (ringkas)")
+        a["eo_text"] = st.text_area("EO (1–3 poin)", value=a.get("eo_text",""), height=90, placeholder="Contoh: Wajah simetris, bukaan mulut normal")
+        a["io_text"] = st.text_area("IO (1–5 poin)", value=a.get("io_text",""), height=120, placeholder="Contoh: Unerupted 38, kalkulus (+), OH sedang")
+
+    st.divider()
+    st.subheader(f"Form kasus — {case} ({stage})")
+
+    # Render case-stage questions
+    stage_questions = schema["cases"][case]["stage"][stage]["questions"]
+    # Inject defaults for dates in PreOp
+    if stage=="PreOp":
+        for q in stage_questions:
+            if q["type"]=="date" and q["key"] not in a:
+                today = datetime.now(TZ).date()
+                a[q["key"]] = today if q.get("default")=="today" else (today + timedelta(days=1))
+
+    for q in stage_questions:
+        if should_show(q, a):
+            # Suggested tpm from BB
+            if q["key"]=="ivfd_tpm" and (not a.get("ivfd_tpm")) and bb>0:
+                drip = int(a.get("drip_factor", q.get("default",20)))
                 mlhr = maintenance_ml_per_hr_421(bb)
-                answers["ivfd_tpm"] = tpm_from_ml_per_hr(mlhr, drip)
-            render_question(q, answers, tutorial=tutorial)
+                a["ivfd_tpm"] = tpm_from_ml_per_hr(mlhr, drip)
+            render_question(q, a, tutorial=tutorial)
 
     st.divider()
     st.subheader("DPJP & Residen")
-    dpjp = st.text_input("DPJP", value=parsed.dpjp)
-    residen = st.text_area("Residen (bebas, nanti copy aja)", value=parsed.residen, height=80)
+    dpjp = st.text_input("DPJP", value=info.dpjp)
+    residen = st.text_area("Residen", value=info.residen, height=80)
 
-    st.session_state["answers"] = answers
-    st.session_state["parsed"] = ParsedInfo(
+    st.session_state["answers"] = a
+    st.session_state["info"] = ParsedInfo(
         nama=nama, jk=jk, umur=umur, pembiayaan=pembiayaan, perawatan=perawatan, kamar=kamar, rs=rs, rm=rm,
-        bb=bb, tb=tb, tindakan=parsed.tindakan, anestesi=parsed.anestesi, penunjang_raw=parsed.penunjang_raw,
-        jam_operasi=parsed.jam_operasi, zona=parsed.zona, dpjp=dpjp, residen=residen
+        bb=bb, tb=tb, tindakan=info.tindakan, anestesi=info.anestesi, penunjang_raw=info.penunjang_raw,
+        jam_operasi=info.jam_operasi, zona=info.zona, dpjp=dpjp, residen=residen
     )
 
-with tabC:
-    parsed = st.session_state["parsed"]
+# -------------------------
+# TAB 3: Output
+# -------------------------
+with tab3:
+    info = st.session_state["info"]
     a = st.session_state["answers"]
 
-    # Determine dates
     laporan_date = datetime.now(TZ).date()
     if stage=="PreOp":
         laporan_date = a.get("tanggal_laporan", laporan_date)
+
+    header = build_header(stage, laporan_date, info)
+    ident = build_ident_line(info, perawatan_override=info.perawatan)
+
+    # S
+    if stage=="Awal":
+        S = build_awal_S(case, a)
+    elif stage in ["POD0","POD1"]:
+        S = build_pod_S(stage, a)
+    else:
+        # PreOp S is usually from raw SOAP; for MVP we let user paste later (next iteration)
+        S = "Pasien rencana tindakan dalam general anestesi. (isi S dari SOAP poli atau ringkas manual)."
+
+    # O
+    if stage=="Awal":
+        O = "O:\nStatus Generalis:\n" + build_TTV(a) + "\n\nStatus Lokalis:\nE.O:\n" + (clean(a.get("eo_text","")) or "-") + "\n\nI.O:\n" + (clean(a.get("io_text","")) or "-") + "\n\n"
+    elif stage in ["POD0","POD1"]:
+        eo, io = build_pod_O(a)
+        O = "O:\nStatus Generalis:\n" + build_TTV(a) + "\n\nStatus Lokalis:\nE.O:\n" + eo + "\n\nI.O:\n" + io + "\n\n"
+    else:
+        O = "O:\n(Status Generalis & Lokalis ambil dari SOAP poli / isi manual)\n\n"
+
+    # Penunjang (ONLY PreOp, from Minlap)
+    penunjang = ""
+    if stage=="PreOp" and info.penunjang_raw:
+        penunjang = info.penunjang_raw + "\n\n"
+
+    # A (simple placeholder MVP)
+    A = "A:\n(isi diagnosis)\n\n"
+
+    # P
     if stage=="PreOp":
         op_date = a.get("tanggal_operasi", laporan_date + timedelta(days=1))
         jam = clean(a.get("jam_operasi","08.00"))
         zona = clean(a.get("zona_waktu","WITA"))
-        tindakan = clean(a.get("tindakan","")) or parsed.tindakan
-        anestesi = clean(a.get("anestesi","general anestesi"))
-    else:
-        tindakan = parsed.tindakan
-        anestesi = parsed.anestesi
+        tindakan = clean(a.get("tindakan","")) or info.tindakan or "(isi tindakan)"
+        anestesi = clean(a.get("anestesi","general anestesi")) or "general anestesi"
 
-    header = build_header(stage, laporan_date, parsed, tindakan=tindakan)
-    ident = build_ident_line(parsed, pembiayaan_override=parsed.pembiayaan)
-
-    S = build_S(stage, case, a)
-
-    # O (minimal)
-    O = ""
-    if stage in ["POD0","POD1"]:
-        eo, io = build_O_local(stage, a)
-        vas = a.get("pain_score",0) if a.get("pain_present") else 0
-        O = (
-            "O :\n"
-            "Status Generalis:\n"
-            f"KU : Baik/Compos Mentis\nSpO2 : 99% (Free Air)\nVAS : {vas}/10\n\n"
-            "Status Lokalis:\nE.O:\n" + eo + "\n\nI.O:\n" + io + "\n"
-        )
-    else:
-        O = "O:\n(Status generalis & lokalis isi/paste sesuai kebutuhan)\n"
-
-    # Penunjang (pakai mentah dari minlap kalau ada)
-    penunjang_text = ""
-    if stage=="PreOp" and parsed.penunjang_raw:
-        penunjang_text = parsed.penunjang_raw + "\n\n"
-
-    # A
-    A = "A:\n(isi diagnosis)\n\n"
-
-    # P
-    P = ""
-    if stage=="PreOp":
-        plan = build_preop_plan(a, parsed.bb)
+        plan = build_preop_plan(a, info.bb)
         plan_lines = "\n".join([f"•⁠  ⁠{x}" for x in plan if clean(x)])
-        tindakan_line = clean(a.get("tindakan","")) or "(isi tindakan)"
-        anestesi_line = clean(a.get("anestesi","general anestesi"))
         op_day = day_name_id(op_date)
-        P = (
-            "P:\n"
-            + plan_lines + "\n"
-            + f"•⁠  ⁠Pro {tindakan_line} dalam {anestesi_line} pada hari {op_day}, {fmt_ddmmyyyy(op_date)} "
-              f"Pukul {jam} {zona} di {parsed.rs}\n\n"
-        )
+        tindakan_line = f"•⁠  ⁠Pro {tindakan} dalam {anestesi} pada hari {op_day}, {fmt_ddmmyyyy(op_date)} Pukul {jam} {zona} di {info.rs}"
+        P = "P:\n" + plan_lines + "\n" + tindakan_line + "\n\n"
+    elif stage=="Awal":
+        P = "P:\n•⁠  ⁠Rencana pemeriksaan penunjang sesuai kasus\n•⁠  ⁠Rencana konsultasi/anestesi bila indikasi\n\n"
     else:
-        P = "P:\n(isi plan)\n\n"
+        P = "P:\n•⁠  ⁠Observasi kondisi umum & luka operasi\n•⁠  ⁠Terapi sesuai instruksi DPJP\n\n"
 
     footer = (
         "Mohon instruksi selanjutnya dokter.\n"
         "Terima kasih.\n\n"
-        f"Residen: {clean(parsed.residen) or '-'}\n\n"
-        f"DPJP: {clean(parsed.dpjp) or '-'}\n"
+        f"Residen: {clean(info.residen) or '-'}\n\n"
+        f"DPJP: {clean(info.dpjp) or '-'}\n"
     )
 
-    output = header + "\n" + ident + "\n" + "S : " + S + "\n\n" + O + "\n" + (penunjang_text if penunjang_text else "") + A + P + footer
+    output = header + "\n" + ident + "\n" + "S : " + S + "\n\n" + O + (penunjang if penunjang else "") + A + P + footer
 
     st.subheader("Output (siap copy)")
-    st.text_area("SOAP", value=output, height=520)
+    st.text_area("SOAP", value=output, height=560)
     st.download_button("Download .txt", data=output.encode("utf-8"), file_name=f"soap_{case}_{stage}.txt", mime="text/plain", use_container_width=True)
