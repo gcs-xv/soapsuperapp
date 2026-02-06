@@ -1,5 +1,5 @@
 {
-  "version": "0.1",
+  "version": "0.2",
   "stages": [
     "Awal",
     "PreOp",
@@ -3881,5 +3881,23 @@
     "Fistula orocutaneous": "1. Pasien berbaring dengan posisi supinasi dibawah pengaruh general anastesi \n2. Dilakukan disinfeksi pada daerah ekstraoral dan intraoral \n3. Drapping daerah operasi\n4. Dilakukan pemasangan pack orofaring \n5. Injeksi vasokonstriktor pada daerah bukalis sinistra \n6. Dilakukan marking pada daerah operasi bukalis sinistra \n7. Dilakukan insisi linear menggunakan blade no 15 dan cauter pada batas luar massa tumor \n8. Dilakukan diseksi tumpul pada basis massa\n9. Dilakukan identifikasi massa tumor dengan ukuran 4x2x1cm\n10. Dilakukan pemisahan massa dari jaringan sekitarnya \n11. Dilakukan pengambilan massa \n12. Dilakukan kontrol pendarahan \n13. Dilakukan spooling dengan Nacl 0,9 % \n14. Dilakukan penjahitan daerah operasi menggunakan vicryl 4-0 \n15. Dilakukan spooling dengan NaCl 0.9 % pada daerah operasi \n16. Bersihkan daerah operasi\n17. Dilakukan pengangkatan packorofaring \n18. Operasi Selesai",
     "TMD": "1.        Pasien berbaring dengan posisi supinasi dibawah pengaruh general anastesi\n\n2.        Dilakukan disinfeksi pada daerah ekstraoral\n\n3.        Drapping daerah operasi\n\n4.        Dilakukan penandaan daerah operasi area lateral kantus ke tragus dextra\n\n5.        Dilakukan marking posisi kanula pertama 10 mm dari tragus dan 2 mm tegak lurus terhadap marking garis\n\n6.        Dilakukan marking posisi kanula kedua 10 mm dari kanula pertama dan 10 mm tegak lurus terhadap marking garis\n\n7.        Dilakukan injeksi larutan anestesi secara subkutan pada daerah titik masuk kanula\n\n8.        Kanula berukuran 21 gauge dimasukkan pada titik pertama dan kedua sambil mandibula dibuka untuk mengoptimalkan lavage sendi\n\n9.        Dilakukan penyuntikan 50 ml NaCl selama sekitar 20 menit melalui kanula pertama dan keluar melalui kanula kedua\n\n10.        Dilakukan injeksi I-PRF sebanyak 1 mL di titik posisi kanula pertama\n\n11.        Evaluasi bukaan mulut\n\n12.        Bersihkan daerah operasi\n\n13.        Operasi selesai",
     "Fraktur": "1. Pasien posisi supine dalam general anestesi \n2. Disinfeksi ekstra oral dan intra oral dengan povidon iodine \n3. Dilakukan drapping dan pemasangan pack orofaring \n4. Dilakukan injeksi vasokonstriktor pada daerah operasi regio vestibulum maksila\n5. Dilakukan wound debridement pada daerah  vestibulum gigi 12-22\n6. Dilakukan pencabutan gigi 21, 36, 46\n7. Dilakukan cuci luka daerah operasi dengan NaCl 0.9%\n8. Dilakukan penjahitan pada vestibulum dan soket gigi 36, 46\n9. dilakukan Reposisi dan reduksi septum nasal\n10. Dilakukan penjahitan plint nose dextra untuk imobilisasi\n11. Dilakukan pemasangan fiksasi akrilik plint untuk imobilisasi\n12. Bersihkan daerah operasi \n13. Dilakukan pengambilan pack orofaring \n14. Operasi selesai"
+  },
+  "stage_rules": {
+    "Awal": {
+      "allow_paste": false,
+      "allow_minlap": false
+    },
+    "PreOp": {
+      "allow_paste": true,
+      "allow_minlap": true
+    },
+    "POD0": {
+      "allow_paste": false,
+      "allow_minlap": false
+    },
+    "POD1": {
+      "allow_paste": false,
+      "allow_minlap": false
+    }
   }
 }
