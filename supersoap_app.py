@@ -302,7 +302,7 @@ def impaksi_builder(ns: str):
     eo_lines=[eo_common_face(f"{ns}_impaksi")]
 
     st.markdown("**Gigi impaksi**")
-    selected = st.multiselect("Pilih gigi", options=["18","28","38","48"], default=["18","28","38","48"])
+    selected = st.multiselect("Pilih gigi", options=["18","28","38","48"], default=["18","28","38","48"], key=f"{ns}_impaksi_pilih_gigi")
     erupt = st.selectbox("Status erupsi", ["Unerupted", "Partial erupted", "Fully erupted"], index=0)
 
     col1, col2, col3 = st.columns(3)
