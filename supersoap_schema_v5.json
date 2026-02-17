@@ -1,0 +1,9 @@
+{
+  "version": "v5",
+  "changes": [
+    "EO/IO smart builders added for Tumor, Odontogenic cyst, TMD, Fraktur, plus Fistula specialization.",
+    "Positive findings trigger follow-up 'where' fields for impaction/trauma relevant items.",
+    "Pre-Op does not parse BB/TB automatically; BB for IVFD is manual as per user rule.",
+    "MINLAP penunjang formatting preserved (raw block)."
+  ]
+}
