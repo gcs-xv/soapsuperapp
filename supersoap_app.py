@@ -281,14 +281,25 @@ def build_history_sentence(h: dict) -> str:
 # =========================
 # EO/IO smart builders for ALL cases
 # =========================
-def eo_common_face():
-    face = st.selectbox("Wajah", ["Wajah simetris", "Wajah asimetris"], index=0)
-    om = st.selectbox("Bukaan mulut", ["bukaan mulut normal", "bukaan mulut terbatas"], index=0)
+def eo_common_face(prefix: str):
+    """Common EO line: face symmetry + mouth opening. Prefix ensures unique widget keys."""
+    face = st.selectbox(
+        "Wajah",
+        ["Wajah simetris", "Wajah asimetris"],
+        index=0,
+        key=f"{prefix}_wajah",
+    )
+    om = st.selectbox(
+        "Bukaan mulut",
+        ["bukaan mulut normal", "bukaan mulut terbatas"],
+        index=0,
+        key=f"{prefix}_bukaan_mulut",
+    )
     return f"{face} dengan {om}"
 
 def impaksi_builder():
     st.subheader("EO/IO Cepat — Impaksi")
-    eo_lines=[eo_common_face()]
+    eo_lines=[eo_common_face("impaksi")]
 
     st.markdown("**Gigi impaksi**")
     selected = st.multiselect("Pilih gigi", options=["18","28","38","48"], default=["18","28","38","48"])
@@ -390,7 +401,7 @@ def infeksi_builder(kind: str):
 
 def tumor_builder():
     st.subheader("EO/IO Cepat — Tumor jaringan lunak")
-    eo_lines=[eo_common_face()]
+    eo_lines=[eo_common_face("tumor")]
     kgb_k = st.selectbox("KGB kanan", ["Tidak teraba, tidak sakit", "Teraba, tidak sakit", "Teraba, sakit"], index=0)
     kgb_l = st.selectbox("KGB kiri", ["Tidak teraba, tidak sakit", "Teraba, tidak sakit", "Teraba, sakit"], index=0)
     eo_lines += [f"KGB Kanan : {kgb_k}", f"KGB Kiri : {kgb_l}"]
