@@ -297,9 +297,9 @@ def eo_common_face(prefix: str):
     )
     return f"{face} dengan {om}"
 
-def impaksi_builder():
+def impaksi_builder(ns: str):
     st.subheader("EO/IO Cepat — Impaksi")
-    eo_lines=[eo_common_face("impaksi")]
+    eo_lines=[eo_common_face(f"{ns}_impaksi")]
 
     st.markdown("**Gigi impaksi**")
     selected = st.multiselect("Pilih gigi", options=["18","28","38","48"], default=["18","28","38","48"])
@@ -399,9 +399,9 @@ def infeksi_builder(kind: str):
     io_lines += [clean(x) for x in extra.splitlines() if clean(x)]
     return eo_lines, io_lines
 
-def tumor_builder():
+def tumor_builder(ns: str):
     st.subheader("EO/IO Cepat — Tumor jaringan lunak")
-    eo_lines=[eo_common_face("tumor")]
+    eo_lines=[eo_common_face(f"{ns}_tumor")]
     kgb_k = st.selectbox("KGB kanan", ["Tidak teraba, tidak sakit", "Teraba, tidak sakit", "Teraba, sakit"], index=0)
     kgb_l = st.selectbox("KGB kiri", ["Tidak teraba, tidak sakit", "Teraba, tidak sakit", "Teraba, sakit"], index=0)
     eo_lines += [f"KGB Kanan : {kgb_k}", f"KGB Kiri : {kgb_l}"]
@@ -506,7 +506,7 @@ def cyst_builder():
     io_lines += [clean(x) for x in extra.splitlines() if clean(x)]
     return eo_lines, io_lines
 
-def tmd_builder():
+def tmd_builder(ns: str):
     st.subheader("EO/IO Cepat — TMD")
     eo_lines=[]
     eo_lines.append("Wajah simetris dengan bukaan mulut normal")
@@ -551,7 +551,7 @@ def tmd_builder():
     io_lines += [clean(x) for x in extra.splitlines() if clean(x)]
     return eo_lines, io_lines
 
-def fraktur_builder():
+def fraktur_builder(ns: str):
     st.subheader("EO/IO Cepat — Fraktur/Trauma")
     eo_lines=[]
     face = st.selectbox("Wajah", ["Wajah asimetris", "Wajah simetris"], index=0)
@@ -618,7 +618,7 @@ def fraktur_builder():
     io_lines += [clean(x) for x in extra.splitlines() if clean(x)]
     return eo_lines, io_lines
 
-def fistula_builder():
+def fistula_builder(ns: str):
     # reuse infection + add fistula note
     eo_lines, io_lines = infeksi_builder("Fistula orocutaneous")
     add = st.text_input("Tambahan fistula (opsional) (contoh: fistula ar bukalis sinistra)", value="")
@@ -632,21 +632,21 @@ def generic_eo_io():
     io = st.text_area("IO (1 baris = 1 poin)", height=120)
     return [clean(x) for x in eo.splitlines() if clean(x)], [clean(x) for x in io.splitlines() if clean(x)]
 
-def build_eo_io(case_name: str):
+def build_eo_io(case_name: str, ns: str):
     if case_name == "Impaksi":
-        return impaksi_builder()
+        return impaksi_builder(ns)
     if case_name in ["Abses", "Selulitis"]:
         return infeksi_builder(case_name)
     if case_name == "Fistula orocutaneous":
-        return fistula_builder()
+        return fistula_builder(ns)
     if case_name == "Tumor":
-        return tumor_builder()
+        return tumor_builder(ns)
     if case_name == "Odontogenic cyst":
         return cyst_builder()
     if case_name == "TMD":
-        return tmd_builder()
+        return tmd_builder(ns)
     if case_name == "Fraktur":
-        return fraktur_builder()
+        return fraktur_builder(ns)
     return generic_eo_io()
 
 # =========================
@@ -749,7 +749,7 @@ with tab_awal:
         tb = st.number_input("TB (cm)", min_value=0.0, max_value=230.0, value=0.0, step=0.5, key="awal_tb")
 
     st.divider()
-    eo_lines, io_lines = build_eo_io(case_name)
+    eo_lines, io_lines = build_eo_io(case_name, "awal")
 
     st.divider()
     st.subheader("A & Plan")
@@ -820,7 +820,7 @@ with tab_preop:
     A = st.text_area("A", value=parsed.A or "", height=90, key="pre_A")
 
     with st.expander("Assist EO/IO (opsional): checklist sesuai kasus", expanded=False):
-        eo_lines, io_lines = build_eo_io(case_name)
+        eo_lines, io_lines = build_eo_io(case_name, "preop")
         if st.button("➡️ Replace EO/IO dari checklist", use_container_width=True, key="pre_replace"):
             st.session_state["pre_EO_override"] = join_bullets(eo_lines, bullet="•⁠  ⁠")
             st.session_state["pre_IO_override"] = join_bullets(io_lines, bullet="•⁠  ⁠")
