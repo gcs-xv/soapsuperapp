@@ -3,6 +3,93 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, date
 from typing import List, Optional, Tuple
 import streamlit as st
+
+# =========================
+# Auto-unique widget keys (prevents StreamlitDuplicateElementId/Key)
+# =========================
+_WIDGET_KEY_COUNTER = {}  # resets each rerun
+
+def _slug_key(s: str) -> str:
+    s = re.sub(r"[^0-9a-zA-Z]+", "_", (s or "").strip())
+    s = re.sub(r"_+", "_", s).strip("_")
+    return s.lower()[:50] or "x"
+
+def _auto_key(widget: str, label: str) -> str:
+    base = f"{widget}_{_slug_key(label)}"
+    i = _WIDGET_KEY_COUNTER.get(base, 0)
+    _WIDGET_KEY_COUNTER[base] = i + 1
+    return f"{base}_{i}"
+
+# Keep originals
+_st_selectbox = st.selectbox
+_st_multiselect = st.multiselect
+_st_checkbox = st.checkbox
+_st_toggle = getattr(st, 'toggle', None)
+_st_text_input = st.text_input
+_st_text_area = st.text_area
+_st_number_input = st.number_input
+_st_radio = st.radio
+_st_select_slider = st.select_slider
+
+def selectbox(label, options, index=0, key=None, **kwargs):
+    if key is None:
+        key = _auto_key('selectbox', str(label))
+    return _st_selectbox(label, options, index=index, key=key, **kwargs)
+
+def multiselect(label, options, default=None, key=None, **kwargs):
+    if key is None:
+        key = _auto_key('multiselect', str(label))
+    return _st_multiselect(label, options, default=default, key=key, **kwargs)
+
+def checkbox(label, value=False, key=None, **kwargs):
+    if key is None:
+        key = _auto_key('checkbox', str(label))
+    return _st_checkbox(label, value=value, key=key, **kwargs)
+
+def toggle(label, value=False, key=None, **kwargs):
+    if _st_toggle is None:
+        # older Streamlit: emulate with checkbox
+        return checkbox(label, value=value, key=key, **kwargs)
+    if key is None:
+        key = _auto_key('toggle', str(label))
+    return _st_toggle(label, value=value, key=key, **kwargs)
+
+def text_input(label, value="", key=None, **kwargs):
+    if key is None:
+        key = _auto_key('text_input', str(label))
+    return _st_text_input(label, value=value, key=key, **kwargs)
+
+def text_area(label, value="", key=None, **kwargs):
+    if key is None:
+        key = _auto_key('text_area', str(label))
+    return _st_text_area(label, value=value, key=key, **kwargs)
+
+def number_input(label, key=None, **kwargs):
+    if key is None:
+        key = _auto_key('number_input', str(label))
+    return _st_number_input(label, key=key, **kwargs)
+
+def radio(label, options, index=0, key=None, **kwargs):
+    if key is None:
+        key = _auto_key('radio', str(label))
+    return _st_radio(label, options, index=index, key=key, **kwargs)
+
+def select_slider(label, options, value=None, key=None, **kwargs):
+    if key is None:
+        key = _auto_key('select_slider', str(label))
+    return _st_select_slider(label, options, value=value, key=key, **kwargs)
+
+# Monkeypatch Streamlit widgets used in this app
+st.selectbox = selectbox
+st.multiselect = multiselect
+st.checkbox = checkbox
+st.toggle = toggle
+st.text_input = text_input
+st.text_area = text_area
+st.number_input = number_input
+st.radio = radio
+st.select_slider = select_slider
+
 from dateutil import tz
 
 # =========================
